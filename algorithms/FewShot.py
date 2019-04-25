@@ -18,7 +18,7 @@ def top1accuracy(output, target):
     pred = pred.view(-1)
     target = target.view(-1)
     accuracy = 100 * pred.eq(target).float().mean()
-    return accuracy
+    return accuracy.item()
 
 
 def activate_dropout_units(model):
@@ -52,7 +52,7 @@ class FewShot(Algorithm):
             train_test_stage = 'fewshot'
             assert(len(batch) == 6)
             images_train, labels_train, images_test, labels_test, K, nKbase = batch
-            self.nKbase = nKbase.squeeze()[0]
+            self.nKbase = nKbase.squeeze()
             self.tensors['images_train'].resize_(images_train.size()).copy_(images_train)
             self.tensors['labels_train'].resize_(labels_train.size()).copy_(labels_train)
             labels_train = self.tensors['labels_train']
@@ -119,7 +119,7 @@ class FewShot(Algorithm):
             Kids[:,:nKbase].contiguous(),requires_grad=False))
         #***********************************************************************
 
-        loss_record  = {}
+        loss_record = {}
         #***********************************************************************
         #************************* FORWARD PHASE *******************************
         #*********** EXTRACT FEATURES FROM TRAIN & TEST IMAGES *****************
@@ -137,7 +137,7 @@ class FewShot(Algorithm):
         #************************** COMPUTE LOSSES *****************************
         loss_cls_all = criterion(cls_scores_var, labels_test_var)
         loss_total = loss_cls_all
-        loss_record['loss'] = loss_total.data[0]
+        loss_record['loss'] = loss_total.data.item()
         loss_record['AccuracyBase'] = top1accuracy(
             cls_scores_var.data, labels_test_var.data)
         #***********************************************************************
@@ -236,7 +236,7 @@ class FewShot(Algorithm):
         #************************* COMPUTE LOSSES ******************************
         loss_cls_all = criterion(cls_scores_var, labels_test_var)
         loss_total = loss_cls_all
-        loss_record['loss'] = loss_total.data[0]
+        loss_record['loss'] = loss_total.data.item()
 
         if self.nKbase > 0:
             loss_record['AccuracyBoth'] = top1accuracy(
