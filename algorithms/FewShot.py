@@ -52,13 +52,15 @@ class FewShot(Algorithm):
             train_test_stage = 'fewshot'
             assert(len(batch) == 6)
             images_train, labels_train, images_test, labels_test, K, nKbase = batch
-            self.nKbase = nKbase.squeeze()
+            if nKbase.size()[0] > 1: 
+                self.nKbase = nKbase.squeeze()[0]
+            else:
+                self.nKbase = nKbase.squeeze()
             self.tensors['images_train'].resize_(images_train.size()).copy_(images_train)
             self.tensors['labels_train'].resize_(labels_train.size()).copy_(labels_train)
             labels_train = self.tensors['labels_train']
 
             nKnovel = 1 + labels_train.max() - self.nKbase
-
             labels_train_1hot_size = list(labels_train.size()) + [nKnovel,]
             labels_train_unsqueeze = labels_train.unsqueeze(dim=labels_train.dim())
             self.tensors['labels_train_1hot'].resize_(labels_train_1hot_size).fill_(0).scatter_(
@@ -70,7 +72,10 @@ class FewShot(Algorithm):
             train_test_stage = 'base_classification'
             assert(len(batch) == 4)
             images_test, labels_test, K, nKbase = batch
-            self.nKbase = nKbase.squeeze()[0]
+            if nKbase.size()[0] > 1:
+                self.nKbase = nKbase.squeeze()[0]
+            else: 
+                self.nKbase = nKbase.squeeze()
             self.tensors['images_test'].resize_(images_test.size()).copy_(images_test)
             self.tensors['labels_test'].resize_(labels_test.size()).copy_(labels_test)
             self.tensors['Kids'].resize_(K.size()).copy_(K)
